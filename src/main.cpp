@@ -1,28 +1,19 @@
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <stdint.h>
 
 #include <csignal>
 
+#include "cxxopts.hpp"
+#include "json.h"
+
 #include "defs.h"
 #include "util.h"
-#include "cxxopts.hpp"
+#include "memory.h"
 
 
-struct SimArgs
-{
-    bool verbose_flag;
-    bool debug_flag;
-
-    std::string inp_file;
-    uint64_t maxitr;
-    std::string uart_port;
-    uint16_t uart_baud;
-    std::string log_file;
-    std::string signature_file;
-    std::string isa_string;
-};
-
+SimArgs * cli_args = nullptr;
 
 void exit_sim(int status)
 {
@@ -77,7 +68,8 @@ SimArgs *parse_cli_args(int argc, char ** argv, SimArgs * args, const SimArgs * 
 		("p,port", "Use provided serial device for uart", cxxopts::value<std::string>(args->uart_port)->default_value(default_args->uart_port))
 		("b,baud", "Specify virtual uart port baudrate", cxxopts::value<uint16_t>(args->uart_baud)->default_value(std::to_string(default_args->uart_baud)))
         ("isa", "Specify RISC-V ISA to emulate", cxxopts::value<std::string>(args->isa_string)->default_value(default_args->isa_string))
-		;
+        ("c,config", "Specify configuration file for RVSim", cxxopts::value<std::string>(args->sim_config_json_file)->default_value(default_args->sim_config_json_file))
+        ;
 
 		options.add_options("Debug")
 		("d,debug", "Start in debug mode", cxxopts::value<bool>(args->debug_flag)->default_value(BOOLSTRING(default_args->debug_flag)))
@@ -126,6 +118,59 @@ SimArgs *parse_cli_args(int argc, char ** argv, SimArgs * args, const SimArgs * 
 }
 
 
+SimConfig *parse_sim_config(SimConfig * cfg, std::string json_file)
+{
+    // read json
+    std::fstream fd;
+    fd.open(json_file, std::ios::in);
+    std::string fcontents;
+    if (fd.is_open())
+    {
+        std::string line;
+        while(getline(fd, line))
+        {
+           fcontents += (line+"\n");
+        }
+        fd.close(); //close the file object.
+    }
+    else
+    {
+        throwError("Unable to open configuration file ["+json_file+"]", true);
+    }
+
+    nlohmann::json jcfg;
+    jcfg = nlohmann::json::parse(fcontents);
+    DBG_PRINT("Parsed json: " << json_file);
+
+    // Get Hart organisation
+    DBG_PRINT("  CPUs:");
+    for(nlohmann::json::iterator it=jcfg["CPU"].begin(); it!=jcfg["CPU"].end(); it++)
+    {
+        std::string hart_id_str = (*it)["id"];
+        DBG_PRINT("    * " << hart_id_str);
+        uint32_t hart_id;
+        sscanf(hart_id_str.c_str(), "%x", &hart_id);
+
+        SimConfig::Hart h = {.id = hart_id};
+        cfg->harts.push_back((h));
+    }
+
+    // Get Memory Organisation
+    DBG_PRINT("  MEMs:");
+    for(nlohmann::json::iterator it=jcfg["MEM"].begin(); it!=jcfg["MEM"].end(); it++)
+    {
+        DBG_PRINT("    * " << (*it)["name"]);
+
+        SimConfig::MemBlk m = {
+            .name = (*it)["name"],
+            .base_addr = (*it)["base"],
+            .size = (*it)["size"],
+            .permission = {.r=(*it)["re"], .w=(*it)["we"], .x=(*it)["xe"]}
+        };
+        cfg->memories.push_back((m));
+    }
+    return cfg;
+}
 
 int main(int argc, char **argv)
 {
@@ -142,11 +187,12 @@ int main(int argc, char **argv)
         .uart_port="/dev/null",
         .uart_baud=9600,
         .log_file="",
-        .signature_file=""
+        .signature_file="",
+        .sim_config_json_file="rvsim_default.json"
     };
 
-    // Recieved CLI args
     SimArgs args;
+    cli_args = &args;
 
     // Process CLI Args
     parse_cli_args(argc, argv, &args, &default_args);
@@ -156,7 +202,18 @@ int main(int argc, char **argv)
         std::cout << SIM_SPLASH << std::endl;
     }
 
+    // Parse RVSim config from json file
+    SimConfig sim_configs;
+    parse_sim_config(&sim_configs, args.sim_config_json_file);
+
+    std::vector<Memory> sim_memory;
+    sim_memory.reserve(sim_configs.memories.size());
+
     // Initialize memory
+    for(int i=0; i<sim_configs.memories.size(); i++)
+    {
+        sim_memory.push_back(Memory(sim_configs.memories[i].size));
+    }
     
     // Initialize processors
 

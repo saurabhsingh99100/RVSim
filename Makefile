@@ -8,12 +8,15 @@ OBJ_DIR = $(BUILD_DIR)/obj
 
 CC = g++
 CXXFLAGS = -Wall
+CXXFLAGS = -DDBG_CODE
 CXXFLAGS += -I $(INC_DIR)
 CXXFLAGS += -I include/cxxopts
+CXXFLAGS += -I include/elfio
+CXXFLAGS += -I include/nlohmann_json
 LDFLAGS = 
 
 EXECUTABLE = rvsim
-CSRCS = main.cpp util.cpp
+CSRCS = main.cpp memory.cpp util.cpp
 OBJS = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(CSRCS))
 SRCS = $(patsubst %,$(SRC_DIR)/%,$(CSRCS))
 
