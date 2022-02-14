@@ -13,7 +13,7 @@ const std::string  COLOR_GREEN  =  "\033[32m";
 const std::string  COLOR_YELLOW =  "\033[33m";
 
 
-void throwError(const std::string msg, bool exit=true)
+void throwError(const std::string msg, bool exit)
 {
     std::cerr << COLOR_RED <<"!ERROR: " << COLOR_RESET << msg << std::endl;
     if(exit)
@@ -27,7 +27,7 @@ void throwWarning(const std::string msg)
     std::cerr << COLOR_YELLOW <<"!WARNING: " << COLOR_RESET << msg << std::endl;
 }
 
-void throwSuccessMessage(std::string msg, bool exit = false)
+void throwSuccessMessage(std::string msg, bool exit)
 {
     std::cout << COLOR_GREEN <<"SUCCESS!: " << COLOR_RESET  << msg <<std::endl;
     if(exit)

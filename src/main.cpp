@@ -10,7 +10,9 @@
 
 #include "defs.h"
 #include "util.h"
-#include "memory.h"
+
+#include "memsim.h"
+#include "core.h"
 
 
 SimArgs * cli_args = nullptr;
@@ -151,8 +153,8 @@ SimConfig *parse_sim_config(SimConfig * cfg, std::string json_file)
         uint32_t hart_id;
         sscanf(hart_id_str.c_str(), "%x", &hart_id);
 
-        SimConfig::Hart h = {.id = hart_id};
-        cfg->harts.push_back((h));
+        SimConfig::Core c = {.id = hart_id};
+        cfg->cores.push_back((c));
     }
 
     // Get Memory Organisation
@@ -212,10 +214,32 @@ int main(int argc, char **argv)
     // Initialize memory
     for(int i=0; i<sim_configs.memories.size(); i++)
     {
-        sim_memory.push_back(Memory(sim_configs.memories[i].size));
+        sim_memory.push_back(Memory(
+            sim_configs.memories[i].base_addr,
+            sim_configs.memories[i].size,
+            sim_configs.memories[i].permission.r,
+            sim_configs.memories[i].permission.w,
+            sim_configs.memories[i].permission.x
+        ));
     }
     
     // Initialize processors
+    std::vector<RVCore> sim_cores;
+    sim_cores.reserve(sim_configs.cores.size());
+
+    for(int i=0; i<sim_configs.cores.size(); i++)
+    {
+        sim_cores.push_back(RVCore(
+            sim_configs.cores[i].id,
+            &sim_memory,
+            0x00000000
+        ));
+    }
+
+    for(int i=0; i<sim_configs.cores.size(); i++)
+    {
+        sim_cores[i].run();
+    }
 
     // Run simulation
     

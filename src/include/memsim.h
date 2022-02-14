@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "util.h"
+#include "defs.h"
 
 /**
  * @brief Memory class
@@ -18,18 +19,29 @@ class Memory
 	uint8_t * mem;
 
 	/**
+	 * @brief Base address of memory
+	 * 
+	 */
+	uint32_t base_addr;
+
+	/**
 	 * @brief size of memory
 	 * 
 	 */
-	uint32_t size;
+	size_t size;
 
+	/**
+	 * @brief Memory access permissions
+	*/
+	
+	bool re;
+	bool we;
+	bool xe;
 
 	/**
 	 * @brief Construct a new Memory object
-	 * 
-	 * @param max_addr size of memory
 	 */
-	Memory(uint32_t max_addr);
+	Memory(uint32_t base_addr, size_t size, bool re, bool we, bool xe);
 
 
 	/**
@@ -48,7 +60,12 @@ class Memory
 	 */
 	bool isValidAddress(uint32_t addr)
 	{
-		return (addr < size);
+		return (addr >= base_addr) && (addr < base_addr+size);
+	}
+
+	uint32_t global2local(uint32_t addr)
+	{
+		return addr - base_addr;
 	}
 
 

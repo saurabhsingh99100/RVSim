@@ -14,7 +14,11 @@
 #define DBG_PRINT(X) \
     DBG(std::cout << X << std::endl)
 
-void throwError(std::string msg, bool exit);
+#define LOG_DUMP(X) \
+    if(cli_args->log_file.length()!=0)   \
+        std::cout << "|" << X << std::endl
+
+void throwError(std::string msg, bool exit=true);
 
 void throwWarning(const std::string msg);
 

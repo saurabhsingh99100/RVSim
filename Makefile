@@ -16,7 +16,7 @@ CXXFLAGS += -I include/nlohmann_json
 LDFLAGS = 
 
 EXECUTABLE = rvsim
-CSRCS = main.cpp memory.cpp util.cpp
+CSRCS = main.cpp memsim.cpp core.cpp util.cpp
 OBJS = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(CSRCS))
 SRCS = $(patsubst %,$(SRC_DIR)/%,$(CSRCS))
 

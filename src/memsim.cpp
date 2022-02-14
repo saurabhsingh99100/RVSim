@@ -6,16 +6,18 @@
 #include "elfio.hpp"
 
 #include "defs.h"
-#include "memory.h"
+#include "memsim.h"
 
 extern SimArgs * cli_args;
 
-Memory::Memory(uint32_t max_addr)
+Memory::Memory(uint32_t base_addr, size_t size, bool re, bool we, bool xe)
+: 
+	base_addr(base_addr),
+	size(size),
+	re(re), we(we), xe(xe)
 {
-    size = max_addr;
-
     // Allocate memory
-    if(!(mem = new uint8_t[max_addr])) 
+    if(!(mem = new uint8_t[size]))
     {
         throwError("out of memory; memory allocation failed\n", true);
     }
@@ -58,7 +60,8 @@ uint8_t Memory::fetchByte(uint32_t addr)
         throwError(errmsg, true);
         return 0;
     }
-    return (uint8_t) mem[addr];
+
+    return (uint8_t) mem[global2local(addr)];
 }
 
 
@@ -87,7 +90,8 @@ void Memory::storeByte(uint32_t addr, uint8_t byte)
         throwError(errmsg, true);
         return;
     }
-    mem[addr] = byte;
+
+    mem[global2local(addr)] = byte;
 }
 
 

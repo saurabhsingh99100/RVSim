@@ -22,7 +22,7 @@ struct SimArgs
 
 struct SimConfig
 {
-    struct Hart
+    struct Core
     {
         uint32_t id;
     };
@@ -41,6 +41,6 @@ struct SimConfig
         } permission;
     };
 
-    std::vector<Hart> harts;
+    std::vector<Core> cores;
     std::vector<MemBlk> memories;
 };

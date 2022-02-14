@@ -1,10 +1,10 @@
 {
     "CPU": [
-        {"id": "deadbeef"}
+        {"id": "0"}
     ],
 
     "MEM": [
         {"name": "rom", "re": true, "we": false, "xe": true, "base": 0, "size": 65536},
-        {"name": "ram", "re": true, "we": true, "xe": false, "base": 0, "size": 16384}
+        {"name": "ram", "re": true, "we": true, "xe": false, "base": 67108864, "size": 16384}
     ]
 }
