@@ -45,6 +45,16 @@ class RVCore
 
     void run();
 
+    bool is_halted()
+    {
+        return halted;
+    }
+
+    uint32_t get_id()
+    {
+        return id;
+    }
+
     
     private:
     // core_id

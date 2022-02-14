@@ -15,7 +15,7 @@ const std::string  COLOR_YELLOW =  "\033[33m";
 
 void throwError(const std::string msg, bool exit)
 {
-    std::cerr << COLOR_RED <<"!ERROR: " << COLOR_RESET << msg << std::endl;
+    std::cerr << (COLOR_RED + "\n!ERROR: "+COLOR_RESET + msg +"\n") << std::flush;
     if(exit)
     {
         exit_sim(EXIT_FAILURE);
@@ -24,13 +24,12 @@ void throwError(const std::string msg, bool exit)
 
 void throwWarning(const std::string msg)
 {
-    std::cerr << COLOR_YELLOW <<"!WARNING: " << COLOR_RESET << msg << std::endl;
+    std::cerr << (COLOR_YELLOW + "\n!WARNING: "+COLOR_RESET + msg +"\n") << std::flush;
 }
 
 void throwSuccessMessage(std::string msg, bool exit)
 {
-    std::cout << COLOR_GREEN <<"SUCCESS!: " << COLOR_RESET  << msg <<std::endl;
-    if(exit)
+    std::cerr << (COLOR_GREEN + "\n!SUCCESS: "+COLOR_RESET + msg +"\n") << std::flush;    if(exit)
     {
         exit_sim(EXIT_SUCCESS);
     }

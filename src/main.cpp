@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <csignal>
+#include <thread>
 
 #include "cxxopts.hpp"
 #include "json.h"
@@ -211,7 +212,7 @@ int main(int argc, char **argv)
     std::vector<Memory> sim_memory;
     sim_memory.reserve(sim_configs.memories.size());
 
-    // Initialize memory
+    // Create memory
     for(int i=0; i<sim_configs.memories.size(); i++)
     {
         sim_memory.push_back(Memory(
@@ -222,6 +223,8 @@ int main(int argc, char **argv)
             sim_configs.memories[i].permission.x
         ));
     }
+
+    // Initialize memory
     
     // Initialize processors
     std::vector<RVCore> sim_cores;
@@ -236,12 +239,41 @@ int main(int argc, char **argv)
         ));
     }
 
-    for(int i=0; i<sim_configs.cores.size(); i++)
-    {
-        sim_cores[i].run();
-    }
 
     // Run simulation
+    #ifdef CORE_SCHEDULING_ROUND_ROBIN
+    while(true)
+    {
+        for(int i=0; i<sim_configs.cores.size(); i++)
+        {
+            if(!sim_cores[i].is_halted())
+                sim_cores[i].tick();
+            else
+            {
+                LOG_DUMP("core[" << sim_cores[i].get_id() << "] halted");
+            }
+        }
+    }
+    #else 
+    #ifdef CORE_SCHEDULING_MULTI_THREAD
+    
+    std::vector<std::thread> active_thr;
+    for(int i=0; i<sim_configs.cores.size(); i++)
+    {
+        active_thr.push_back(std::thread(&RVCore::run, &sim_cores[i]));
+    }
+
+    for(int i=0; i<active_thr.size(); i++)
+    {
+        active_thr[i].join();
+    }
+
+
+    #else
+    #warning No core scheduling policy defined
+    #endif
+    #endif
+
     
     // control must never reach here
     throwError("[INTERNAL]: Control fault in main.cpp", true);

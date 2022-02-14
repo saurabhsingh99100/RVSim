@@ -8,12 +8,12 @@ OBJ_DIR = $(BUILD_DIR)/obj
 
 CC = g++
 CXXFLAGS = -Wall
-CXXFLAGS = -DDBG_CODE
+CXXFLAGS = -DDBG_CODE -DCORE_SCHEDULING_MULTI_THREAD
 CXXFLAGS += -I $(INC_DIR)
 CXXFLAGS += -I include/cxxopts
 CXXFLAGS += -I include/elfio
 CXXFLAGS += -I include/nlohmann_json
-LDFLAGS = 
+LDFLAGS = -pthread
 
 EXECUTABLE = rvsim
 CSRCS = main.cpp memsim.cpp core.cpp util.cpp

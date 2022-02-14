@@ -16,7 +16,7 @@
 
 #define LOG_DUMP(X) \
     if(cli_args->log_file.length()!=0)   \
-        std::cout << "|" << X << std::endl
+        std::cout << ("|"  X + "\n") << std::flush
 
 void throwError(std::string msg, bool exit=true);
 
